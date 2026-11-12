@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLL798D: Distillation Column Network Science Explorer (impcol_c.mtx)</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; display: flex; height: 100vh; overflow: hidden; }
+    #sidebar { width: 420px; background-color: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
+    #network-container { flex: 1; height: 100%; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
+    h1 { font-size: 1.25rem; font-weight: 700; color: #38bdf8; margin-bottom: 6px; }
+    .subtitle { font-size: 0.8rem; color: #94a3b8; margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .card { background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+    .card-title { font-size: 0.85rem; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; }
+    .badge { background-color: #0284c7; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem; }
+    .metric-item { background: #1e293b; padding: 6px 8px; border-radius: 4px; border-left: 3px solid #38bdf8; }
+    .metric-label { color: #94a3b8; font-size: 0.7rem; }
+    .metric-value { font-weight: 700; font-size: 0.95rem; color: #f8fafc; }
+    .control-group { margin-bottom: 12px; }
+    label { font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 4px; font-weight: 500; }
+    select, button { width: 100%; padding: 8px 10px; border-radius: 6px; background-color: #1e293b; border: 1px solid #475569; color: #f8fafc; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+    select:focus, button:focus { outline: none; border-color: #38bdf8; }
+    button:hover { background-color: #334155; }
+    .btn-primary { background-color: #0284c7; border: none; font-weight: 600; margin-top: 6px; }
+    .btn-primary:hover { background-color: #0369a1; }
+    .legend-item { display: flex; align-items: center; font-size: 0.75rem; margin-bottom: 6px; }
+    .legend-color { width: 14px; height: 14px; border-radius: 3px; margin-right: 8px; }
+    #details-panel { font-size: 0.8rem; line-height: 1.4; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 2px; }
+    .detail-key { color: #94a3b8; }
+    .detail-val { font-weight: 600; color: #e2e8f0; }
+    #floating-overlay { position: absolute; top: 16px; right: 16px; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(8px); border: 1px solid #475569; border-radius: 8px; padding: 12px 16px; font-size: 0.75rem; color: #cbd5e1; max-width: 320px; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h1>Distillation Network Explorer</h1>
+    <div class="subtitle">CLL798D Network Science • IIT Delhi • Dataset: impcol_c.mtx</div>
+
+    <div class="card">
+      <div class="card-title">Network Invariants <span class="badge">Verified</span></div>
+      <div class="metric-grid">
+        <div class="metric-item"><div class="metric-label">Nodes (N)</div><div class="metric-value">137</div></div>
+        <div class="metric-item"><div class="metric-label">Edges (M)</div><div class="metric-value">352</div></div>
+        <div class="metric-item"><div class="metric-label">Avg Degree &lang;k&rang;</div><div class="metric-value">5.14</div></div>
+        <div class="metric-item"><div class="metric-label">Avg Path &lang;l&rang;</div><div class="metric-value">3.51</div></div>
+        <div class="metric-item"><div class="metric-label">Clustering &lang;C&rang;</div><div class="metric-value">0.250</div></div>
+        <div class="metric-item"><div class="metric-label">Small-World &sigma;</div><div class="metric-value">6.30 &gg; 1</div></div>
+        <div class="metric-item"><div class="metric-label">Modularity Q</div><div class="metric-value">0.542</div></div>
+        <div class="metric-item"><div class="metric-label">Allometry &eta;</div><div class="metric-value">1.288</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Interactive Controls</div>
+      <div class="control-group">
+        <label for="comm-filter">Filter by Operational Community:</label>
+        <select id="comm-filter" onchange="filterCommunity(this.value)">
+          <option value="all">Show All Communities (6)</option>
+          <option value="0">C0: Rectifying Section (Trays 1-7)</option>
+          <option value="1">C1: Stripping Section (Trays 9-15)</option>
+          <option value="2">C2: Feed Flash & Distribution (Tray 8)</option>
+          <option value="3">C3: Stripping Base & Reboiler Coupling</option>
+          <option value="4">C4: Rectifying Top & Condenser Divider</option>
+          <option value="5">C5: Global Pressure & Enthalpy Constraints</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="hub-select">Highlight Key Control Hub / Sensor:</label>
+        <select id="hub-select" onchange="focusNode(this.value)">
+          <option value="">-- Select Master Coordinate --</option>
+          <option value="121">Node 121: Master Pressure & Energy Constraint (Deg 14, Betw 0.079)</option>
+          <option value="122">Node 122: Feed Stage Flash Divider (Deg 14, Betw 0.081)</option>
+          <option value="39">Node 39: Overhead Reflux Return Divider (Deg 13, Betw 0.093)</option>
+          <option value="92">Node 92: Reboiler Boilup Controller (Deg 12, Betw 0.073)</option>
+          <option value="40">Node 40: Critical Intermediate Coupling (Deg 9, Betw 0.048)</option>
+          <option value="61">Node 61: Feed Vicinity VLE Interface (Deg 11, Betw 0.042)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Disturbance Propagation Simulation:</label>
+        <div style="display: flex; gap: 6px;">
+          <button onclick="traceDisturbance(122)" class="btn-primary">Feed (122)</button>
+          <button onclick="traceDisturbance(92)" class="btn-primary">Reboiler (92)</button>
+          <button onclick="traceDisturbance(39)" class="btn-primary">Reflux (39)</button>
+        </div>
+        <button onclick="resetView()" style="margin-top: 6px;">Reset Network View</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Inspected Variable Details</div>
+      <div id="details-panel">
+        <p style="color: #64748b; font-style: italic;">Click any node on the graph to inspect its chemical engineering equations, stage identity, degree, and centralities.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Community Palette</div>
+      <div class="legend-item"><div class="legend-color" style="background: #1f77b4;"></div><span>C0: Rectifying Section (Trays 1-7)</span></div>
+      <div class="legend-item"><div class="legend-color" style="background: #ff7f0e;"></div><span>C1: Stripping Section (Trays 9-15)</span></div>
+      <div class="legend-item"><div class="legend-color" style="background: #2ca02c;"></div><span>C2: Feed Flash Zone (Tray 8)</span></div>
+      <div class="legend-item"><div class="legend-color" style="background: #d62728;"></div><span>C3: Stripping Base & Reboiler Sump</span></div>
+      <div class="legend-item"><div class="legend-color" style="background: #9467bd;"></div><span>C4: Rectifying Top & Condenser Drum</span></div>
+      <div class="legend-item"><div class="legend-color" style="background: #8c564b;"></div><span>C5: Global Pressure & Enthalpy Backbone</span></div>
+    </div>
+  </div>
+
+  <div id="network-container">
+    <div id="floating-overlay">
+      <strong>Interactive Instructions:</strong><br>
+      • Drag to pan, scroll to zoom.<br>
+      • Click node for chemical engineering metadata.<br>
+      • Node size &prop; Betweenness Centrality.<br>
+      • Top hubs have prominent gold borders.
+    </div>
+  </div>
+
+  <script>
+    const rawNodes = [{"id": 0, "label": "0", "title": "Node 0: Stage 1 (Rectifying)<br><b>x_1 / T_1</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 1)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 0, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 1 (Rectifying)", "variable_type": "x_1 / T_1", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 1)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 1, "label": "1", "title": "Node 1: Stage 2 (Rectifying)<br><b>x_2 / T_2</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 2)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 1, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 2 (Rectifying)", "variable_type": "x_2 / T_2", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 2)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 2, "label": "2", "title": "Node 2: Stage 3 (Rectifying)<br><b>x_3 / T_3</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 3)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 2, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 3 (Rectifying)", "variable_type": "x_3 / T_3", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 3)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 3, "label": "3", "title": "Node 3: Stage 4 (Rectifying)<br><b>x_4 / T_4</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 4)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 3, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 4 (Rectifying)", "variable_type": "x_4 / T_4", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 4)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 4, "label": "4", "title": "Node 4: Stage 5 (Rectifying)<br><b>x_5 / T_5</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 5)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 4, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 5 (Rectifying)", "variable_type": "x_5 / T_5", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 5)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 5, "label": "5", "title": "Node 5: Stage 6 (Rectifying)<br><b>x_6 / T_6</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 6)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 5, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 6 (Rectifying)", "variable_type": "x_6 / T_6", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 6)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 6, "label": "6", "title": "Node 6: Stage 7 (Rectifying)<br><b>x_7 / T_7</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 7)<br>Degree: 5 (In: 1, Out: 4)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 6, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 7 (Rectifying)", "variable_type": "x_7 / T_7", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 7)", "undirected_degree": 5, "in_degree": 1, "out_degree": 4}}, {"id": 7, "label": "7", "title": "Node 7: Stage 8 (Rectifying)<br><b>x_8 / T_8</b><br>Liquid Mole Fraction & Stage Temperature Balance (Tray 8)<br>Degree: 2 (In: 1, Out: 1)", "color": {"background": "#9467bd", "border": "#cbd5e1", "highlight": {"background": "#fbbf24", "border": "#ffffff"}}, "borderWidth": 1, "size": 12, "font": {"color": "#ffffff", "size": 10, "face": "system-ui"}, "community": 4, "meta": {"node_id": 7, "community_id": 4, "operational_section": "Rectifying Section", "stage_location": "Stage 8 (Rectifying)", "variable_type": "x_8 / T_8", "engineering_description": "Liquid Mole Fraction & Stage Temperature Balance (Tray 8)", "undirected_degree": 2, "in_degree": 1, "out_degree": 1}}, {"id": 8, "label": "8", "title": "Node 8: Stage 1 (Rectifying)<br><b>y_1 / V_1</b><br>Vapor Mole Fraction & Interstage Vapor Flow (Tray 1)<br>Degree: 9 (In: 8, Out: 1)", "color": {"background": "#9467bd", "border": "#cbd5](#)*
+
